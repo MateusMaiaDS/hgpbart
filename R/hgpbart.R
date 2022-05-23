@@ -267,7 +267,7 @@ update_residuals <- function(tree, x, nu, phi, residuals, seed = NULL) {
 
 # ==============#
 # Bart-hGP FUNCTION
-
+#' @export
 hgp_bart <- function(x, y,
                      number_trees_mu = 2, # Setting the number of trees mu
                      number_trees_tau = 2, # Setting the number of trees for tau
@@ -1554,30 +1554,37 @@ count_terminal_nodes <- function(tree) {
 }
 
 # Predicting a gpbart
-#' @param hgp_model The fitted gpBART model
-#'
-#' @param ... other parameters
+#' @method predict "hgpbart_hGPBART"
+#' @rdname hgpbart_hGPBART
 #' @param x_test the test set
-#' @param type select the prediction outputs among 'c("all", "mean","median"))'
 #' @param pred_bart_only boolean if there are only bart predictions
-#'
+#' @param type select the prediction outputs among 'c("all", "mean","median"))'
+#' @param ... other parameters
+#' @usage
+#' \method{predict}{hgpbart_hGPBART}(object,
+#'         x_test,
+#'         pred_bart_only = FALSE,
+#'         type = c('all', 'median', 'mean'),
+#'         ...)
 #' @export
-predict.hgpbart_hGPBART <- function(hgp_model,..., x_test, type = c("all", "mean", "median"),
-                                  pred_bart_only = FALSE) {
-
+predict.hgpbart_hGPBART <- function(object, x_test,
+                                  pred_bart_only = FALSE,
+                                  type = c("all", "mean", "median"),...) {
+  # Matching the type
+  type <- match.arg(type)
   # Loading x_train
-  if(hgp_model$control$x_scale){
-    x_train <- as.matrix(scale(hgp_model$control$X,center = hgp_model$control$mean_x,scale = hgp_model$control$sd_x))
-    x_test  <- as.matrix(scale(x_test,center = hgp_model$control$mean_x,scale = hgp_model$control$sd_x))
+  if(object$control$x_scale){
+    x_train <- as.matrix(scale(object$control$X,center = object$control$mean_x,scale = object$control$sd_x))
+    x_test  <- as.matrix(scale(x_test,center = object$control$mean_x,scale = object$control$sd_x))
 
     # Retrieving the col.names
-    colnames(x_train) <- colnames(x_test)  <- colnames(hgp_model$control$X)
+    colnames(x_train) <- colnames(x_test)  <- colnames(object$control$X)
   } else {
-    x_train <- hgp_model$X
+    x_train <- object$X
   }
 
   # Number of iters of bayesian simulation
-  n_iter <- hgp_model$mcmc$store_size
+  n_iter <- object$mcmc$store_size
 
   # The number of columns is the number of test observations and the rows are the iterations
   y_hat_matrix <-
@@ -1596,7 +1603,7 @@ predict.hgpbart_hGPBART <- function(hgp_model,..., x_test, type = c("all", "mean
   y_list_matrix <- list()
 
   # Creating the final vector
-  y_pred_final <- matrix(0, nrow = hgp_model$control$number_trees_mu, ncol = nrow(x_test))
+  y_pred_final <- matrix(0, nrow = object$control$number_trees_mu, ncol = nrow(x_test))
   cov_pred_final <- list()
   variance <- matrix(0, nrow = nrow(x_test), ncol = nrow(x_test))
 
@@ -1611,34 +1618,34 @@ predict.hgpbart_hGPBART <- function(hgp_model,..., x_test, type = c("all", "mean
     utils::setTxtProgressBar(progress_bar, i)
 
     # Selecting one tree from BART model
-    current_tree_mu <- hgp_model$posterior$trees_mu[[i]]
-    current_tree_tau <- hgp_model$posterior$trees_tau[[i]]
+    current_tree_mu <- object$posterior$trees_mu[[i]]
+    current_tree_tau <- object$posterior$trees_tau[[i]]
 
     # Getting the predictions from the test observations
     y_pred_aux <- predict_gaussian_from_multiple_trees(
       multiple_trees = current_tree_mu,
       x_train = x_train,
       x_new = x_test,
-      partial_residuals = hgp_model$posterior$current_partial_residuals_list[[i]],
-      phi_vector = hgp_model$posterior$phi_store[i, ],
-      nu_vector = hgp_model$prior$nu_vector,
-      precision_vector_trees = hgp_model$posterior$current_precision_list[[i]],
+      partial_residuals = object$posterior$current_partial_residuals_list[[i]],
+      phi_vector = object$posterior$phi_store[i, ],
+      nu_vector = object$prior$nu_vector,
+      precision_vector_trees = object$posterior$current_precision_list[[i]],
       pred_bart_only = pred_bart_only
     )
 
     y_pred_precision_aux <- predict_tau_test(multiple_trees = current_tree_tau,
                                               x_train = x_train,
-                                              precision_vector_trees = hgp_model$posterior$current_precision_list[[i]],
+                                              precision_vector_trees = object$posterior$current_precision_list[[i]],
                                               x_new = x_test)
 
     # Iterating over all trees (test)
     y_pred_final <- y_pred_aux$all_tree_pred
     y_pred_precision_final <- y_pred_precision_aux$all_tree_pred_precision
 
-    if(hgp_model$control$scale_boolean) {
+    if(object$control$scale_boolean) {
       # Recovering the prediction interval from test
-      y_hat_matrix[i, ] <- unnormalize_bart(colSums(y_pred_final), a = hgp_model$control$a_min, b = hgp_model$control$b_max)
-      y_hat_precision_matrix[i,] <-  apply(y_pred_precision_final,2, function(x) { exp(sum(log(x)))})/( (hgp_model$control$b_max- hgp_model$control$a_min)^2)
+      y_hat_matrix[i, ] <- unnormalize_bart(colSums(y_pred_final), a = object$control$a_min, b = object$control$b_max)
+      y_hat_precision_matrix[i,] <-  apply(y_pred_precision_final,2, function(x) { exp(sum(log(x)))})/( (object$control$b_max- object$control$a_min)^2)
     } else {
       y_hat_matrix[i, ] <- colSums(y_pred_aux$all_tree_pred)
       y_hat_precision_matrix[i,] <- apply(y_pred_precision_final,2, function(x) { exp(sum(log(x)))})

@@ -165,6 +165,7 @@ PD_chol  <- function(x, ...) tryCatch(chol(x, ...), error=function(e) {
 )
 
 # Calculating CRPS from (https://arxiv.org/pdf/1709.04743.pdf)
+#' @export
 crps <- function(y,means,sds){
 
   # scaling the observed y
@@ -176,6 +177,7 @@ crps <- function(y,means,sds){
 }
 
 # Getting e-statistic (Based on Pratola et. al 2018)
+#' @export
 e_statistic <- function(mean_one,sd_one,
                         mean_two,sd_two,
                         seed = NULL){

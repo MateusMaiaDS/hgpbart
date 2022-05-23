@@ -1,4 +1,22 @@
+# Getting simulation function
+#' @export
+sim_het <- function(n = 100){
+
+  # Generating random samples
+  x <- as.matrix(sort(stats::runif(n = n)))
+  fx = 4*(x[,1]^2) #quadratric function f
+  sx = .2*exp(2*x[,1]) # exponential function s
+  y = as.matrix(fx + sx*stats::rnorm(n)) # y = f(x) + s(x) Z
+  colnames(x) <- "x"
+  colnames(y) <- "y"
+
+  # Returning the list
+  return(list(x = x,
+              y = y))
+}
+
 # Goldberg et. al 1998
+#' @export
 goldberg_sim <- function(n, seed){
 
   # Setting a seed
@@ -16,6 +34,7 @@ goldberg_sim <- function(n, seed){
 
 
 # Yuhan and and Waba
+#' @export
 yuhan_waba_sim <- function(n, seed){
 
 
@@ -43,6 +62,7 @@ yuhan_waba_sim <- function(n, seed){
 }
 
 # Willians 2006
+#' @export
 willian_sim <- function(n, seed){
 
   # Setting a seed

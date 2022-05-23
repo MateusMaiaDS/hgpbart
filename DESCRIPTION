@@ -1,0 +1,28 @@
+Package: hgpbart
+Type: Package
+Title: Extension to GP-BART algorithm
+Version: 0.1.0
+Authors@R: 
+    c(person("Mateus", "Maia", , "mateus.maiamarques.2021@mumail.ie",
+    role = c("aut","cre"),
+           comment = c(ORCID = "0000-0001-7056-386X")),
+    person("Keefe ", "Murphy", , "keefe.Murphy@mu.ie",
+    role = c("aut")),
+    person("Andrew", "C. Parnell", , "andrew.parnell@mu.ie",
+    role = c("aut"),
+           comment = c(ORCID = "0000-0001-7956-7939")))
+Maintainer: Mateus Maia <mateus.maiamarques.2021@mumail.ie>
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Imports:
+    mvtnorm,
+    stats,
+    stringr,
+    Rcpp
+LazyData: true
+RoxygenNote: 7.1.2
+LinkingTo: 
+    Rcpp
+

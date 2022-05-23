@@ -2007,6 +2007,7 @@ get_train_predictions <- function(gpbart_mod) {
 }
 
 # Calculating a PI coverage
+#' @export
 pi_coverage <- function(y, y_pred, sd_pred, prob = 0.5){
 
   # CI boundaries

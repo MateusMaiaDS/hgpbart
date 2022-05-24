@@ -214,3 +214,43 @@ e_statistic <- function(mean_one,sd_one,
   return(e_stat)
 
 }
+
+# Calculating the
+#' @export
+#'
+hgpbart_qqplot <- function(y, hgp_bart_pred,n_unif=1000,...){
+
+  # Calculating the empirical CDF
+  cdf_emp <- function(y_value, y_sample){
+    return( mean(y_sample<=y_value))
+  }
+
+  # Getting the vector of CDF's for each column for a posterior sample object
+  cdf_sample <- function(y,sample_matrix){
+    n_obs <- ncol(sample_matrix) # Number of observation
+    cdf_vec <- numeric(n_obs)
+    # Iterating over all columns
+    for(i in 1:n_obs){
+      cdf_vec[i] <- cdf_emp(y_value = y[i],
+                            y_sample = sample_matrix[,i])
+    }
+    return(cdf_vec)
+  }
+
+  n_post <- nrow(hgp_bart_pred$out$pred)
+
+  # Generating each of the the samples
+  posterior_draw <- hgp_bart_pred$out$pred + hgp_bart_pred$out$sd*matrix(stats::rnorm(n = length(hgp_bart_pred$out$pred)),
+                                                                        nrow=n_post)
+
+  cdf_y <- cdf_sample(y = y,sample_matrix = posterior_draw)
+
+  # Sampling the unif
+  uniform_samples <- stats::runif(n_unif)
+
+  # Plotting the qqplot
+  stats::qqplot(cdf_y,uniform_samples,...)
+  graphics::abline(0,1,col = "red", lwd = 2)
+  return(cdf_y)
+
+}

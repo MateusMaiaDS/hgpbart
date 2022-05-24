@@ -2008,11 +2008,24 @@ get_train_predictions <- function(gpbart_mod) {
 
 # Calculating a PI coverage
 #' @export
-pi_coverage <- function(y, y_pred, sd_pred, prob = 0.5){
+pi_coverage <- function(y, y_hat_post, sd_post, prob = 0.5){
+
+  # Getting the number of posterior samples and columns, respect.
+  np <- nrow(y_hat_post)
+  nobs <- ncol(y_hat_post)
+
+  # Case for uniform distribution for \tau
+  if(length(y_hat_post)==length(sd_post)){
+    post_draw <- y_pred_post + sd_post*matrix(stats::rnorm(n = np*nobs),
+                                              nrow = np)
+  } else {
+    post_draw <- y_pred_post + replicate(sd_post,n = nobs)*matrix(stats::rnorm(n = np*nobs),
+                                                                  nrow = np)
+  }
 
   # CI boundaries
-  low_ci <- y_pred + stats::qnorm(p = prob/2)*sd_pred
-  up_ci <- y_pred + stats::qnorm(p = 1-prob/2)*sd_pred
+  low_ci <- apply(post_draw,2,function(x){quantile(x,probs = prob/2)})
+  up_ci <- apply(post_draw,2,function(x){quantile(x,probs = 1-prob/2)})
 
   pi_cov <- sum(y<=up_ci & y>=low_ci)/length(y)
 

@@ -2010,10 +2010,19 @@ get_train_predictions <- function(gpbart_mod) {
 #' @export
 pi_coverage <- function(y, y_hat_post, sd_post, prob = 0.5){
 
-  # Getting the number of posterior samples and columns, respect.
-  np <- nrow(y_hat_post)
-  nobs <- ncol(y_hat_post)
-
+  if(!is.null(dim(y_hat_post))){
+   # Getting the number of posterior samples and columns, respect.
+    np <- nrow(y_hat_post)
+    nobs <- ncol(y_hat_post)
+  } else {
+    # Case of non-bayesian estimation
+    np <- 1
+    nobs <- length(y_hat_post)
+    low_ci <- y_hat_post + stats::qnorm(prob/2)*sd_post
+    up_ci <- y_hat_post + stats::qnorm(1-prob/2)*sd_post
+    pi_cov <- sum(y<=up_ci & y>=low_ci)/length(y)
+    return(pi_cov)
+  }
   # Case for uniform distribution for \tau
   if(length(y_hat_post)==length(sd_post)){
     post_draw <- y_hat_post + sd_post*matrix(stats::rnorm(n = np*nobs),

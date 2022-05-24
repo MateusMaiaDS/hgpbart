@@ -2016,10 +2016,10 @@ pi_coverage <- function(y, y_hat_post, sd_post, prob = 0.5){
 
   # Case for uniform distribution for \tau
   if(length(y_hat_post)==length(sd_post)){
-    post_draw <- y_pred_post + sd_post*matrix(stats::rnorm(n = np*nobs),
+    post_draw <- y_hat_post + sd_post*matrix(stats::rnorm(n = np*nobs),
                                               nrow = np)
   } else {
-    post_draw <- y_pred_post + replicate(sd_post,n = nobs)*matrix(stats::rnorm(n = np*nobs),
+    post_draw <- y_hat_post + replicate(sd_post,n = nobs)*matrix(stats::rnorm(n = np*nobs),
                                                                   nrow = np)
   }
 

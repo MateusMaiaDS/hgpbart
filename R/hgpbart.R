@@ -279,8 +279,8 @@ hgp_bart <- function(x, y,
 
                         tau = 1, # Tau from prior,
 
-                        a_tau = 10, # Prior from a_v_ratio gamma
-                        d_tau = 3, # Prior from d_v_ratio gamma,
+                        a_tau = 3, # Prior from a_v_ratio gamma
+                        d_tau = 1, # Prior from d_v_ratio gamma,
                         K_bart = 2,
                         prob_tau = 0.9,
                         kappa = 0.5),
@@ -749,13 +749,21 @@ hgp_bart <- function(x, y,
         }
 
         # Propose a new tree based on the verbs: grow/prune/change/swap
-        verb <- sample(c("grow", "prune", "change", "swap"),
-                       prob = c(0.25,0.25,0.4,0.1), size = 1)
-
+        if(rotation){
+          verb <- sample(c("grow", "grow_projection", "prune", "change", "change_projection", "swap"),
+                         prob = c(0.125,0.125,0.25,0.20,0.20,0.1), size = 1)
+        } else{
+          verb <- sample(c("grow", "prune", "change", "swap"),
+                         prob = c(0.25,0.25,0.4,0.1), size = 1)
+        }
 
         # Case of rotation
-        if (i < max(floor(0.1 * burn), 10) || length(current_trees_tau[[j]]) == 1) verb <- "grow"  # Grow the tree for the first few iterations
-
+        if(rotation){
+          if(i < max(floor(0.1 * burn), 10) | length(current_trees_mu[[j]]) == 1) verb <- sample(c("grow","grow_projection"),
+                                                                                                 size = 1) # Grow the tree for the first few iterations
+        } else {
+          if(i < max(floor(0.1 * burn), 10) || length(current_trees_mu[[j]]) == 1) verb <- "grow"  # Grow the tree for the first few iterations
+        }
 
         # GETTING A NEW TREE
         new_trees_tau <- current_trees_tau # Creating new trees to updated as candidate
@@ -1065,7 +1073,7 @@ hgp_bart <- function(x, y,
       if(number_trees_tau == 1) {
 
         # Getting the current partial values
-        current_partial_residuals_precision_squared <- matrix((y_scale^2)/c(precisions), ncol = length(y_scale))
+        current_partial_residuals_precision_squared <- matrix((y_scale^2)*c(precisions), ncol = length(y_scale))
         # MAYBE NEED TO REVIEW THIS LINE
 
       } else {

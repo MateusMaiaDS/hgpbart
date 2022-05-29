@@ -823,6 +823,7 @@ update_tree_verb_bart <- function(tree, x, node_min_size, verb, rotation = TRUE,
                                           x = x, node_min_size = node_min_size, rotation = rotation,
                                           theta = theta
                          ),
+                         
                          prune = prune_tree_verb(tree, x = x), # Prune verb
                          change = change_tree_verb(tree, x = x, node_min_size = node_min_size, rotation = rotation, theta = theta), # Change verb
                          swap = swap_tree_verb(tree, x = x, node_min_size = node_min_size) # Swap verb
@@ -859,8 +860,10 @@ log_transition_prob <- function(current_tree, new_tree, verb){
   # Get the values
   return(switch(verb,
                 grow = (log(p_prune)+log(get_leaves(current_tree)))-(log(get_branches(new_tree))+ log(p_grow)),
+                grow_projection = (log(p_prune)+log(get_leaves(current_tree)))-(log(get_branches(new_tree))+ log(p_grow)),
                 prune = (log(p_grow)+log(get_branches(current_tree)))-(log(get_leaves(new_tree))+ log(p_prune)),
                 change = 0,
+                change_projection = 0,
                 swap = 0 ))
 }
 

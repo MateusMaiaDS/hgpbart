@@ -69,16 +69,17 @@ naive_tau <- function(x, y) {
   # Getting the valus from n and p
   n <- length(y)
 
-  # Getting the value from p
-  p <- ifelse(is.null(ncol(x)), 1, ncol(x))
+  df <- data.frame(x,y)
+  colnames(df) <- c(colnames(x),"y")
 
   # Naive lm_mod
-  lm_mod <- stats::lm(formula = y ~ ., data =  data.frame(y, x))
+  lm_mod <- stats::lm(formula = y ~ ., data =  df)
 
-  sigma <- sqrt(sum((lm_mod$residuals)^2)/(n - p))
+  sigma <- stats::sigma(lm_mod)
 
-  tau <- 1/sigma^2
-    return(tau)
+  tau <- sigma^(-2)
+
+  return(tau)
 }
 
 # Naive sigma_estimation
